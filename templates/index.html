@@ -19,15 +19,16 @@
            {{ display_currently_playing }}
         </div>
     </div>
-    <script>
-        function updateTrack() {
-          fetch("/get_current_track")
-            .then(response => response.json())
-            .then(data => {
-              document.querySelector(".currently-playing__song").textContent = data.track_name;
-              document.querySelector(".currently-playing__image img").src = data.track_image;
-            });
-        }
-        setInterval(updateTrack, 5000);
-      </script>
+    <h2>Top Artists:</h2>
+    <div class="top-artists">
+        {% for artist in display_top_10_artists %}
+            <div class="top-artists__artist">
+                <div class="top-artists__artist__image">
+                    <img src="{{ artist.images.0.url }}" alt="Artist Image">
+                </div>
+                <div class="top-artists__artist__name">
+                    {{ artist.name }}
+                </div>
+            </div>
+        {% endfor %}
 </body>

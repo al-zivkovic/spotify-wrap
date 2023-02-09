@@ -3,14 +3,14 @@
 <html>
     <head>
         <title>My Spotify</title>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">       
     </head>
 </html>
 
 <body>
     <h1>{{ display_name }}'s Spotify</h1>
     <image class="profile-image" src="{{ display_image }}" alt="Profile Image">
-    <h2>Currently Playing</h2>
+    <h2>Currently Playing:</h2>
     <div class="currently-playing">
         <div class="currently-playing__image">
             <img src="{{ display_currently_playing_image }}" alt="Album Art">
@@ -19,4 +19,15 @@
            {{ display_currently_playing }}
         </div>
     </div>
+    <script>
+        function updateTrack() {
+          fetch("/get_current_track")
+            .then(response => response.json())
+            .then(data => {
+              document.querySelector(".currently-playing__song").textContent = data.track_name;
+              document.querySelector(".currently-playing__image img").src = data.track_image;
+            });
+        }
+        setInterval(updateTrack, 5000);
+      </script>
 </body>

@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 import os
 from dotenv import load_dotenv
 from requests import post, get
 import spotipy
+
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
@@ -25,9 +26,12 @@ def get_currently_playing():
     access_token = request.args.get("access_token")
     sp = spotipy.Spotify(auth=access_token)
     current_track = sp.current_user_playing_track()
-    current_track_name = current_track["item"]["name"]
-    current_track_image = current_track["item"]["album"]["images"][0]["url"]
-    return [current_track_name, current_track_image]
+    if current_track == None:
+        return ["Nothing is currently playing", "https://i.kym-cdn.com/photos/images/original/002/139/758/0c4.jpg"]
+    else:
+        current_track_name = current_track["item"]["name"]
+        current_track_image = current_track["item"]["album"]["images"][0]["url"]
+        return [current_track_name, current_track_image]
 
 @app.route("/")
 def login():
@@ -57,6 +61,7 @@ def index():
     display_image=display_image, 
     display_currently_playing=display_currently_playing,
     display_currently_playing_image=display_currently_playing_image)
+
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,10 +1,62 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for
+import os
+from dotenv import load_dotenv
+from requests import post, get
+import spotipy
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static", template_folder="templates")
 
-@app.route('/')
+load_dotenv()
+
+client_id = os.getenv("CLIENT_ID")
+client_secret = os.getenv("CLIENT_SECRET")
+
+API_ENDPOINT = "https://api.spotify.com/v1"
+
+def create_spotify_oauth():
+    return spotipy.oauth2.SpotifyOAuth(
+        client_id=client_id,
+        client_secret=client_secret,
+        redirect_uri=url_for("callback", _external=True),
+        scope="user-read-private user-read-email user-read-playback-state user-modify-playback-state"
+    )
+
+def get_currently_playing():
+    access_token = request.args.get("access_token")
+    sp = spotipy.Spotify(auth=access_token)
+    current_track = sp.current_user_playing_track()
+    current_track_name = current_track["item"]["name"]
+    current_track_image = current_track["item"]["album"]["images"][0]["url"]
+    return [current_track_name, current_track_image]
+
+@app.route("/")
+def login():
+    sp_oauth = create_spotify_oauth()
+    auth_url = sp_oauth.get_authorize_url()
+    return redirect(auth_url)
+
+@app.route("/callback")
+def callback():
+    sp_oauth = create_spotify_oauth()
+    code = request.args.get("code")
+    token_info = sp_oauth.get_access_token(code)
+    access_token = token_info["access_token"]
+    return redirect(url_for("index", access_token=access_token))
+
+@app.route("/index")
 def index():
-    return render_template('index.html')
+    access_token = request.args.get("access_token")
+    sp = spotipy.Spotify(auth=access_token)
+    user = sp.current_user()
+    display_name = user["display_name"]
+    display_image = user["images"][0]["url"]
+    display_currently_playing = get_currently_playing()[0]
+    display_currently_playing_image = get_currently_playing()[1]
+    return render_template("index.html", 
+    display_name=display_name, 
+    display_image=display_image, 
+    display_currently_playing=display_currently_playing,
+    display_currently_playing_image=display_currently_playing_image)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)

@@ -28,7 +28,7 @@ def get_currently_playing():
     current_track = sp.current_user_playing_track()
     top_10_artists = sp.current_user_top_artists(limit=10)["items"]
     if current_track == None:
-        return ["Nothing is currently playing", "https://i.kym-cdn.com/photos/images/original/002/139/758/0c4.jpg"]
+        return ["Nothing is currently playing", "https://i.kym-cdn.com/photos/images/original/002/139/758/0c4.jpg", top_10_artists]
     else:
         current_track_name = current_track["item"]["name"]
         current_track_image = current_track["item"]["album"]["images"][0]["url"]
